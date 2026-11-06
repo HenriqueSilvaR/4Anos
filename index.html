@@ -244,8 +244,8 @@
 
 <!-- HERO -->
 <section id="hero">
-  <div class="tag">06 · 11 · 2022 → 06 · 11 · 2026</div>
-  <h1>4<small>ANOS</small></h1>
+  <div class="tag" id="tagDatas"></div>
+  <h1><span id="bigNum">4</span><small>ANOS</small></h1>
   <div class="name script" id="nomeDela"></div>
   <div id="heroStatus"></div>
   <div class="count-grid" id="counter"></div>
@@ -320,7 +320,7 @@ const CONFIG = {
   seuNome:  "Henrique",          // ← seu nome, aparece na assinatura
 
   inicio:      "2022-11-06T00:00:00",   // começo do namoro
-  aniversario: "2026-11-06T00:00:00",   // dia dos 4 anos
+  aniversario: "2026-11-06T00:00:00",   // só usado no modo teste (?dia=1)
 
   // Música opcional: coloque o arquivo na mesma pasta (ex.: "musica.mp3"). Deixe "" para não ter.
   musica: "musica.mp3",
@@ -421,7 +421,8 @@ function diffCal(a, b){
   return {y,m,d,h,mi,s};
 }
 const pad = n => String(n).padStart(2,"0");
-let introDone = false;
+let introDone = false, celebrated = false, beat = 0;
+const dd = n => String(n).padStart(2,"0");
 
 function tick(){
   const n = now();
@@ -430,16 +431,29 @@ function tick(){
   $("#counter").innerHTML = boxes.map(([l,v])=>`<div class="count-box"><b>${v}</b><span>${l}</span></div>`).join("");
 
   const totalDays = Math.floor((n - START) / 864e5);
-  $("#sinceText").innerHTML = `Já são <b>${totalDays.toLocaleString("pt-BR")}</b> dias de nós, desde 06/11/2022 ❤`;
+  const ini = `${dd(START.getDate())}/${dd(START.getMonth()+1)}/${START.getFullYear()}`;
+  $("#sinceText").innerHTML = `Já são <b>${totalDays.toLocaleString("pt-BR")}</b> dias de nós, desde ${ini} ❤`;
+
+  // "Hoje" = o dia do aniversário de namoro (mesmo dia e mês de START), a partir do 1º ano
+  const hoje = t.y >= 1 && n.getMonth() === START.getMonth() && n.getDate() === START.getDate();
+  const alvo = hoje ? t.y : t.y + 1;            // quantos anos estamos comemorando / esperando
+  const dataAlvo = new Date(START); dataAlvo.setFullYear(START.getFullYear() + alvo);
+
+  $("#bigNum").textContent = alvo;
+  $("#tagDatas").textContent = `${dd(START.getDate())} · ${dd(START.getMonth()+1)} · ${START.getFullYear()} → ${dd(dataAlvo.getDate())} · ${dd(dataAlvo.getMonth()+1)} · ${dataAlvo.getFullYear()}`;
 
   const status = $("#heroStatus");
-  if (n < ANNIV){
-    const left = ANNIV - n;
-    const d = Math.floor(left/864e5), h = Math.floor(left%864e5/36e5), m = Math.floor(left%36e5/6e4), s = Math.floor(left%6e4/1e3);
-    status.textContent = `Faltam ${d} dias, ${pad(h)}h ${pad(m)}min ${pad(s)}s para completarmos 4 anos`;
+  if (hoje){
+    status.textContent = `Hoje a gente faz ${alvo} ${alvo === 1 ? "ano" : "anos"} juntos! ❤`;
+    if (introDone){
+      if (!celebrated){ celebrated = true; confetti(220); }
+      else if (++beat % 30 === 0) confetti(60);   // chuvinha de confete de tempos em tempos
+    }
   } else {
-    status.textContent = "Hoje a gente faz 4 anos juntos! ❤";
-    if (!celebrated && introDone){ celebrated = true; confetti(220); }
+    celebrated = false;
+    const left = dataAlvo - n;
+    const d = Math.floor(left/864e5), h = Math.floor(left%864e5/36e5), m = Math.floor(left%36e5/6e4), s = Math.floor(left%6e4/1e3);
+    status.textContent = `Faltam ${d} ${d === 1 ? "dia" : "dias"}, ${pad(h)}h ${pad(m)}min ${pad(s)}s para completarmos ${alvo} ${alvo === 1 ? "ano" : "anos"}`;
   }
 }
 setInterval(tick, 1000); tick();
@@ -753,7 +767,6 @@ $("#intro").addEventListener("click", ()=>{
   if (CONFIG.musica) audio.play().catch(()=>{});
   for(let i=0;i<14;i++) setTimeout(flyHeart, i*120);
   tick();
-  if (now() >= ANNIV) { celebrated = true; confetti(220); }
 });
 </script>
 </body>
