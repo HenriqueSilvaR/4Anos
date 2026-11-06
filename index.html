@@ -421,7 +421,7 @@ function diffCal(a, b){
   return {y,m,d,h,mi,s};
 }
 const pad = n => String(n).padStart(2,"0");
-let celebrated = false;
+let introDone = false;
 
 function tick(){
   const n = now();
@@ -741,7 +741,7 @@ yes.onclick = () => {
 };
 
 /* ---------- Música opcional ---------- */
-let introDone = false;
+
 const audio = $("#audio"), mbtn = $("#musicBtn");
 if (CONFIG.musica){ audio.src = CONFIG.musica; mbtn.style.display = "block";
   mbtn.onclick = () => { audio.paused ? audio.play() : audio.pause(); }; }
